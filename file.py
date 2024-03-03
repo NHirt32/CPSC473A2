@@ -9,7 +9,7 @@ def input():
         A tuple containing the file names of our test and input csv files (Relative path)
     """
 
-    if len(sys.argv) != 4:
+    if len(sys.argv) != 3:
         print('Incorrect number of arguments (Should be 3)')
         sys.exit(1)
 
