@@ -29,10 +29,18 @@ def read(trainFile, testFile):
         A tuple containing our training and testing DataFrames
     """
 
-    trainDF = pd.DataFrame(trainFile)
-    testDF = pd.DataFrame(testFile)
+    trainDF = pd.read_csv(trainFile)
+    testDF = pd.read_csv(testFile)
 
     return trainDF, testDF
 
-def output():
-    return
+def output(predDF):
+    """
+    This function outputs our prediction DataFrame as a csv file
+
+    Params:
+        predDF (DataFrame): Our initial test DataFrame with our predictions appended to it
+
+    """
+
+    predDF.to_csv('PredictedResults.csv', index=False)

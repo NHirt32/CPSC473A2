@@ -1,6 +1,10 @@
+from functools import reduce
+import operator
+
+targetState = "no"
 predictionList = []
 
-def prob(feature, trainDF):
+def prob(feature, colName, trainDF):
     """
     This function figures out the occurrence probability of individual features
 
@@ -10,14 +14,14 @@ def prob(feature, trainDF):
     Returns:
         Numeric value of probability of our target in the training DataFrame
     """
-    featureCount = trainDF.value_counts()[feature]
+    featureCount = trainDF[colName].value_counts()[feature]
     featureProb = featureCount/len(trainDF)
 
     return featureProb
 
-def conditionalProb(feature, req, trainDF):
+def conditionalProb(feature, colName, req, trainDF):
     """
-    This function
+    This function calculated the conditional probability of a feature given a requirement
 
     Params:
         target (String): The value we are trying to find the probability of
@@ -26,7 +30,7 @@ def conditionalProb(feature, req, trainDF):
         The conditional probability of our feature given a requirement in our training DataFrame
     """
 
-    reqRows = trainDF.loc[trainDF['play'] == req]
+    reqRows = trainDF[colName].loc[trainDF['play'] == req]
     featureCount = reqRows.value_counts()[feature]
     overallReqRows = len(reqRows)
     targetProb = featureCount/overallReqRows
@@ -39,26 +43,34 @@ def master(trainDF, testDF):
 
     Params:
         trainDF (DataFrame): DataFrame containing our training data
-        testDF (DataFrame): DataFrame containg our testing data
+        testDF (DataFrame): DataFrame containig our testing data
     Returns:
-
+        DataFrame of our test data with our appended predictions
     """
 
     featureProbList = []
     conditionalProbList = []
 
     # Increment through every row in our test DataFrame
-    for row in testDF.iterrows():
+    for index, row in testDF.iterrows():
         # Incrementing through each feature of row
-        for value in row:
+        for colName, value in row.items():
             # Calculating probability of individual features
-            featureProbList.append(prob(value, trainDF))
-            conditionalProbList.append(conditionalProb(value, "no", trainDF))
+            featureProbList.append(prob(value, colName, trainDF))
+            conditionalProbList.append(conditionalProb(value, colName, targetState, trainDF))
 
-    reqProb = prob("no", trainDF)
+        reqProb = prob(targetState, 'play', trainDF)
 
-    overallProb =
+        featureProbProduct = reduce(operator.mul, featureProbList)
+        conditionalProbProduct = reduce(operator.mul, conditionalProbList)
 
+        bayesProb = (conditionalProbProduct * reqProb) / (featureProbProduct)
 
+        if (bayesProb > 0.5):
+            predictionList.append('no')
+        else:
+            predictionList.append('yes')
 
-    return
+    testDF['play'] = predictionList
+
+    return testDF
